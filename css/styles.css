@@ -42,7 +42,7 @@
 header {
     border: 2px solid;
     font-family: 'Courier New', Courier, monospace;
-    background-image: url("/images/Black_and_white_squares.png");
+    background-image: url("../images/Black_and_white_squares.png");
     background-size: 85px 80px;
     opacity: 0.9;
 }
