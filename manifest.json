@@ -1,0 +1,17 @@
+{
+  "name": "TODO LIST",
+  "short_name": "TODO",
+  "description": "Una aplicación sencilla para organizar tareas.",
+  "start_url": "index.html",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "icons": [
+    {
+      "src": "icons/icon.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+#principal {
+    margin: 5%;
+    width: 50%;
+    border: 2px solid;
+    background-color: white;
+}
+
+#principal div {
+    margin: 5%;
+}
+
+#principal button {
+    border: 1px solid;
+    background-color: white;
+    -webkit-text-stroke: 1px black;
+}
+
+#principal input {
+    width: 50%;
+    border: 1px solid;
+}
+
+#tasks {
+    padding: 2% 0%;
+    width: 100%;
+    background-color: white;
+}
+
+#tasks div {
+    display: flex;
+    justify-content: center;
+    gap: 2%;
+    margin: 1%;
+    -webkit-text-stroke: 1px black;
+}
+
+#tasks button {
+    border: 1px solid;
+    background-color: white;
+}
+
+header {
+    border: 2px solid;
+    font-family: 'Courier New', Courier, monospace;
+    background-image: url("./Black_and_white_squares.png");
+    background-size: 85px 80px;
+    opacity: 0.9;
+}
+
+header h1 {
+    color: white;
+    -webkit-text-stroke: 1px black;
+}
+
+main {
+    justify-items: center;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    background-color: lightgrey;
+}
