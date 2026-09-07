@@ -37,7 +37,13 @@ self.addEventListener("activate", event => {
 self.addEventListener("fetch", event => {
   event.respondWith(
     caches.match(event.request).then(response => {
-      return response || fetch(event.request);
+      if (response) {
+        return response;
+      }
+      if (event.request.mode === "navigate") {
+        return caches.match("/todo-list/index.html");
+      }
+      return fetch(event.request);
     })
   );
 });
