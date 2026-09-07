@@ -1,6 +1,6 @@
 const CACHE_NAME = "todolist-cache-v4";
 const urlsToCache = [
-    "/",
+    "/todo-list/",
     "/todo-list/index.html",
     "/todo-list/manifest.json",
     "/todo-list/css/styles.css",
