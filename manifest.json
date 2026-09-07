@@ -9,7 +9,7 @@
   "theme_color": "#ffffff",
   "icons": [
     {
-      "src": "icons/icon.png",
+      "src": "/todo-list/icons/icon.png",
       "sizes": "32x32",
       "type": "image/png"
     }
