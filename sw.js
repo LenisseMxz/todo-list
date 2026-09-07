@@ -10,7 +10,8 @@ const urlsToCache = [
     "/todo-list/js/taskbox.js",
     "/todo-list/js/taskstorage.js",
     "/todo-list/images/Black_and_white_squares.png",
-    "/todo-list/icons/icon.png"
+    "/todo-list/icons/icon_32.png",
+    "/todo-list/icons/icon_512.png"
 ]
 
 self.addEventListener("install", event => {
