@@ -1,13 +1,16 @@
-const CACHE_NAME = "todolist-cache-v3";
+const CACHE_NAME = "todolist-cache-v4";
 const urlsToCache = [
     "/",
-    "/index.html",
-    "/styles.css",
-    "/app.js",
-    "/task.js",
-    "/taskbox.js",
-    "/taskstorage.js",
-    "Black_and_white_squares.png"
+    "/todo-list/index.html",
+    "/todo-list/manifest.json",
+    "/todo-list/css/styles.css",
+    "/todo-list/js/app.js",
+    "/todo-list/js/sw.js",
+    "/todo-list/js/task.js",
+    "/todo-list/js/taskbox.js",
+    "/todo-list/js/taskstorage.js",
+    "/todo-list/images/Black_and_white_squares.png",
+    "/todo-list/icons/icon.png"
 ]
 
 self.addEventListener("install", event => {
