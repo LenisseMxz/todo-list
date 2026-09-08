@@ -1,0 +1,17 @@
+{
+  "name": "todo-list",
+  "version": "1.0.0",
+  "description": "Una aplicación sencilla para organizar tareas.",
+  "main": "js/app.js",
+  "scripts": {
+    "start": "node js/app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@prisma/client": "^6.19.3",
+    "prisma": "^6.19.3",
+    "sqlite3": "^6.0.1"
+  }
+}
