@@ -18,9 +18,9 @@ class Taskbox {
     }
 
     // Elimina la tarea específica
-    deleteTask(title) {
+    deleteTask(task) {
 
-        const index = this.#tasks.findIndex(task => task.taskTitle === title);
+        const index = this.#tasks.findIndex(t => t.taskTitle === task.taskTitle);
 
         if (index !== -1) {
             this.#tasks.splice(index, 1);

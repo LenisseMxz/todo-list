@@ -1,13 +1,13 @@
 import { Taskbox } from "./taskbox.js";
 import { Task } from "./task.js";
-import { saveTasks, loadTasks } from "./taskstorage.js";
+import { saveTask, loadTasks, eraseTask } from "./taskstorage.js";
 
 // Asigna clase principal
 let myTaskbox = new Taskbox();
 
 // Declara constantes de elementos HTML
 const btnAdd = document.getElementById("btn-add");
-const tasks = document.getElementById("tasks");
+const tasksContainer = document.getElementById("tasks");
 
 // Offline
 if ("serviceWorker" in navigator) {
@@ -17,9 +17,11 @@ if ("serviceWorker" in navigator) {
 }
 
 // Al cargar la página
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
 
-    myTaskbox.tasks = loadTasks().map(taskTitle => new Task(taskTitle));
+    const tasks = await loadTasks();
+
+    myTaskbox.tasks = tasks.map(task => new Task(task.title))
 
     tasks.innerHTML = "";
 
@@ -32,23 +34,21 @@ document.addEventListener("DOMContentLoaded", () => {
         taskLabel.textContent = task.taskTitle;
         btnDelete.textContent = "x";
 
-        btnDelete.addEventListener("click", () => {
+        btnDelete.addEventListener("click", async () => {
+            await eraseTask(task);
             myTaskbox.deleteTask(task.taskTitle);
             div.remove();
-
-            // Nube local
-            saveTasks(myTaskbox.tasks);
         });
 
         div.appendChild(taskLabel);
         div.appendChild(btnDelete);
 
-        tasks.appendChild(div);
+        tasksContainer.appendChild(div);
     });
 });
 
 // Bóton de añadir tarea
-btnAdd.addEventListener("click", () => {
+btnAdd.addEventListener("click", async () => {
     
     const inputTask = document.getElementById("input-task");
     const task = inputTask.value;
@@ -57,8 +57,8 @@ btnAdd.addEventListener("click", () => {
 
     myTaskbox.addTask(newTask);
 
-    // Nube local
-    saveTasks(myTaskbox.tasks);
+    // Base de datos
+    await saveTask(newTask);
 
     const div = document.createElement("div");
     const taskLabel = document.createElement("label");
@@ -67,15 +67,16 @@ btnAdd.addEventListener("click", () => {
     taskLabel.textContent = task;
     btnDelete.textContent = "x";
 
-    btnDelete.addEventListener("click", () => {
-        myTaskbox.deleteTask(task);
+    btnDelete.addEventListener("click", async () => {
+        await eraseTask(newTask);
+        myTaskbox.deleteTask(newTask);
         div.remove();
     });     
 
     div.appendChild(taskLabel);
     div.appendChild(btnDelete);
 
-    tasks.appendChild(div);
+    tasksContainer.appendChild(div);
 
     inputTask.value = "";
 })
