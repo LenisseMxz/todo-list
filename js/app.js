@@ -23,7 +23,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     myTaskbox.tasks = tasks.map(task => new Task(task.title))
 
-    tasks.innerHTML = "";
+    tasksContainer.innerHTML = "";
 
     myTaskbox.tasks.forEach(task => {
 
@@ -69,7 +69,7 @@ btnAdd.addEventListener("click", async () => {
 
     btnDelete.addEventListener("click", async () => {
         await eraseTask(newTask);
-        myTaskbox.deleteTask(newTask);
+        myTaskbox.deleteTask(newTask.taskTitle);
         div.remove();
     });     
 
