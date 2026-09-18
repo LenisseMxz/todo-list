@@ -10,11 +10,11 @@ const btnAdd = document.getElementById("btn-add");
 const tasksContainer = document.getElementById("tasks");
 
 // Offline
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("/todo-list/sw.js")
-    .then(() => console.log("Service Worker registrado"))
-    .catch(err => console.error("Error al registrar SW:", err));
-}
+// if ("serviceWorker" in navigator) {
+//   navigator.serviceWorker.register("/todo-list/sw.js")
+//     .then(() => console.log("Service Worker registrado"))
+//     .catch(err => console.error("Error al registrar SW:", err));
+// }
 
 // Al cargar la página
 document.addEventListener("DOMContentLoaded", async () => {
