@@ -65,16 +65,9 @@ btnAdd.addEventListener("click", async () => {
     const newTask = new Task(task);
     myTaskbox.addTask(newTask);
 
-    // Online
-    if (navigator.onLine) {
-        await saveTask(newTask);
-    // Offline
-    } else {
-        let offlineTasks = JSON.parse(localStorage.getItem("offlineTasks")) || [];
-        offlineTasks.push(newTask);
-        localStorage.setItem("offlineTasks", JSON.stringify(offlineTasks));
-        console.log("Guardado offline:", newTask.taskTitle);
-    }
+    // Guardado
+    await saveTask(newTask);
+ 
 
     const div = document.createElement("div");
     const taskLabel = document.createElement("label");
@@ -84,15 +77,8 @@ btnAdd.addEventListener("click", async () => {
     btnDelete.textContent = "x";
 
     btnDelete.addEventListener("click", async () => {
-        // Online
-        if (navigator.onLine) {
-            await eraseTask(newTask);
-        // Offline
-        } else {
-            let offlineTasks = JSON.parse(localStorage.getItem("offlineTasks")) || [];
-            offlineTasks = offlineTasks.filter(t => t.taskTitle !== newTask.taskTitle);
-            localStorage.setItem("offlineTasks", JSON.stringify(offlineTasks));
-        }
+        // Borrado
+        await eraseTask(newTask);
         myTaskbox.deleteTask(newTask.taskTitle);
         div.remove();
     });
