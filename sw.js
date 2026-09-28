@@ -6,9 +6,6 @@ const urlsToCache = [
     "/todo-list/sw.js",
     "/todo-list/css/styles.css",
     "/todo-list/js/app.js",
-    "/todo-list/js/task.js",
-    "/todo-list/js/taskbox.js",
-    "/todo-list/js/taskstorage.js",
     "/todo-list/images/Black_and_white_squares.png",
     "/todo-list/icons/icon_32.png",
     "/todo-list/icons/icon_512.png"
