@@ -16,35 +16,36 @@ export async function saveTask(task) {
     // Offline
     } else {
         let offlineTasks = JSON.parse(localStorage.getItem("offlineTasks")) || [];
-        offlineTasks.push(newTask);
+        offlineTasks.push({ title: task.taskTitle });
         localStorage.setItem("offlineTasks", JSON.stringify(offlineTasks));
-        console.log("Guardado offline:", newTask.taskTitle);
+        console.log("Guardado offline:", task.taskTitle);
     }
 }
 
 // Devuelve las tareas de la base de datos
 export async function loadTasks() {
-  if (navigator.onLine) {
-    try {
-      // Online
-      const { data, error } = await supabase
-        .from("tasks")
-        .select("*");
+    if (navigator.onLine) {
+        try {
+        // Online
+        const { data, error } = await supabase
+            .from("tasks")
+            .select("*");
 
-      if (error) {
-        console.error("Error cargando tareas de Supabase:", error);
+        if (error) {
+            console.error("Error cargando tareas de Supabase:", error);
+            return JSON.parse(localStorage.getItem("offlineTasks")) || [];
+        }
+
+        return data || [];
+
+        } catch (err) {
+        console.error("Error inesperado:", err);
         return JSON.parse(localStorage.getItem("offlineTasks")) || [];
-      }
-
-      return data || [];
-
-    } catch (err) {
-      console.error("Error inesperado:", err);
-      return JSON.parse(localStorage.getItem("offlineTasks")) || [];
+        }
+        // Offline
+    } else {
+        return JSON.parse(localStorage.getItem("offlineTasks")) || [];
     }
-  } else {
-    return JSON.parse(localStorage.getItem("offlineTasks")) || [];
-  }
 }
 
 // Borra la tarea en la base de datos
@@ -62,7 +63,7 @@ export async function eraseTask(task) {
     // Offline
     } else {
         let offlineTasks = JSON.parse(localStorage.getItem("offlineTasks")) || [];
-        offlineTasks = offlineTasks.filter(t => t.taskTitle !== newTask.taskTitle);
+        offlineTasks = offlineTasks.filter(t => t.title !== task.taskTitle);
         localStorage.setItem("offlineTasks", JSON.stringify(offlineTasks));
     }
 }
