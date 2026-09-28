@@ -16,6 +16,15 @@ if ("serviceWorker" in navigator) {
     .catch(err => console.error("Error al registrar SW:", err));
 }
 
+window.addEventListener("online", async () => {
+    const offlineTasks = JSON.parse(localStorage.getItem("offlineTasks")) || [];
+    for (const task of offlineTasks) {
+        await saveTask(task);
+    }
+    localStorage.removeItem("offlineTasks");
+    console.log("Pendientes sincronizados con la base de datos");
+});
+
 // Al cargar la página
 document.addEventListener("DOMContentLoaded", async () => {
 
@@ -49,34 +58,48 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 // Bóton de añadir tarea
 btnAdd.addEventListener("click", async () => {
-    
     const inputTask = document.getElementById("input-task");
-    const task = inputTask.value;
+    const task = inputTask.value.trim();
+    if (!task) return;
 
-    const newTask = new Task(task)
-
+    const newTask = new Task(task);
     myTaskbox.addTask(newTask);
 
-    // Base de datos
-    await saveTask(newTask);
+    // Online
+    if (navigator.onLine) {
+        await saveTask(newTask);
+    // Offline
+    } else {
+        let offlineTasks = JSON.parse(localStorage.getItem("offlineTasks")) || [];
+        offlineTasks.push(newTask);
+        localStorage.setItem("offlineTasks", JSON.stringify(offlineTasks));
+        console.log("Guardado offline:", newTask.taskTitle);
+    }
 
     const div = document.createElement("div");
     const taskLabel = document.createElement("label");
     const btnDelete = document.createElement("button");
-    
+
     taskLabel.textContent = task;
     btnDelete.textContent = "x";
 
     btnDelete.addEventListener("click", async () => {
-        await eraseTask(newTask);
+        // Online
+        if (navigator.onLine) {
+            await eraseTask(newTask);
+        // Offline
+        } else {
+            let offlineTasks = JSON.parse(localStorage.getItem("offlineTasks")) || [];
+            offlineTasks = offlineTasks.filter(t => t.taskTitle !== newTask.taskTitle);
+            localStorage.setItem("offlineTasks", JSON.stringify(offlineTasks));
+        }
         myTaskbox.deleteTask(newTask.taskTitle);
         div.remove();
-    });     
+    });
 
     div.appendChild(taskLabel);
     div.appendChild(btnDelete);
-
     tasksContainer.appendChild(div);
 
     inputTask.value = "";
-})
+});
