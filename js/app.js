@@ -19,7 +19,7 @@ if ("serviceWorker" in navigator) {
 window.addEventListener("online", async () => {
     const offlineTasks = JSON.parse(localStorage.getItem("offlineTasks")) || [];
     for (const task of offlineTasks) {
-        await saveTask(task);
+        await saveTask(new Task(task.title));
     }
     localStorage.removeItem("offlineTasks");
     console.log("Pendientes sincronizados con la base de datos");
