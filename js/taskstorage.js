@@ -2,6 +2,7 @@ import { supabase } from './supabase.js'
 
 const CACHE_KEY = 'tasks_cache';
 const PENDING_KEY = 'tasks_pending_sync';
+const PENDING_DELETE_KEY = 'tasks_pending_delete';
 
 // Guarda las tareas
 export async function saveTask(task) {
@@ -50,6 +51,20 @@ export async function loadTasks() {
 
 // Borra la tarea
 export async function eraseTask(task) {
+
+    if (!navigator.onLine) {
+        // Si era una tarea que aún no se había sincronizado, basta con sacarla de la cola
+        const wasPending = removeFromPendingQueue(task.taskTitle);
+
+        // Si venía de la caché (ya existía en Supabase), hay que marcarla para borrar después
+        if (!wasPending) {
+            addToPendingDeleteQueue(task.taskTitle);
+        }
+
+        removeFromCache(task.taskTitle);
+        return;
+    }
+
     const { data, error } = await supabase
         .from('tasks')
         .delete()
@@ -60,28 +75,41 @@ export async function eraseTask(task) {
     }
 }
 
-// Sincroniza las tareas pendientes creadas offline
+// Sincroniza inserciones y eliminaciones pendientes creadas offline
 export async function syncPendingTasks() {
 
-    const pending = getPendingQueue();
+    const pendingInserts = getPendingQueue();
+    const pendingDeletes = getPendingDeleteQueue();
 
-    if (pending.length === 0) return;
+    if (pendingInserts.length > 0) {
+        const { error } = await supabase
+            .from('tasks')
+            .insert(pendingInserts.map(title => ({ title })));
 
-    const { error } = await supabase
-        .from('tasks')
-        .insert(pending.map(title => ({ title })));
-
-    if (error) {
-        console.error('Error syncing pending tasks:', error);
-        return;
+        if (error) {
+            console.error('Error syncing pending inserts:', error);
+        } else {
+            clearPendingQueue();
+            console.log('Pending inserts synced:', pendingInserts);
+        }
     }
 
-    clearPendingQueue();
-    console.log('Pending tasks synced:', pending);
+    if (pendingDeletes.length > 0) {
+        const { error } = await supabase
+            .from('tasks')
+            .delete()
+            .in('title', pendingDeletes);
+
+        if (error) {
+            console.error('Error syncing pending deletes:', error);
+        } else {
+            clearPendingDeleteQueue();
+            console.log('Pending deletes synced:', pendingDeletes);
+        }
+    }
 }
 
 // Helpers de caché local
-
 function saveCachedTasks(tasks) {
     localStorage.setItem(CACHE_KEY, JSON.stringify(tasks));
 }
@@ -91,8 +119,13 @@ function getCachedTasks() {
     return cached ? JSON.parse(cached) : [];
 }
 
-// Helpers de cola pendiente
+function removeFromCache(title) {
+    const cached = getCachedTasks();
+    const filtered = cached.filter(t => t.title !== title);
+    saveCachedTasks(filtered);
+}
 
+// Helpers de cola de inserciones pendientes
 function getPendingQueue() {
     const pending = localStorage.getItem(PENDING_KEY);
     return pending ? JSON.parse(pending) : [];
@@ -104,6 +137,33 @@ function addToPendingQueue(title) {
     localStorage.setItem(PENDING_KEY, JSON.stringify(pending));
 }
 
+// Borra la tarea de la cola de tareas pendientes (por añadir)
+function removeFromPendingQueue(title) {
+    const pending = getPendingQueue();
+    const filtered = pending.filter(t => t !== title);
+
+    const wasPending = filtered.length !== pending.length;
+    localStorage.setItem(PENDING_KEY, JSON.stringify(filtered));
+    return wasPending;
+}
+
 function clearPendingQueue() {
     localStorage.removeItem(PENDING_KEY);
+}
+
+// Helpers de cola de eliminaciones pendientes
+
+function getPendingDeleteQueue() {
+    const pending = localStorage.getItem(PENDING_DELETE_KEY);
+    return pending ? JSON.parse(pending) : [];
+}
+
+function addToPendingDeleteQueue(title) {
+    const pending = getPendingDeleteQueue();
+    pending.push(title);
+    localStorage.setItem(PENDING_DELETE_KEY, JSON.stringify(pending));
+}
+
+function clearPendingDeleteQueue() {
+    localStorage.removeItem(PENDING_DELETE_KEY);
 }
