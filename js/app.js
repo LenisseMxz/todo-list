@@ -1,36 +1,14 @@
 import { Taskbox } from "./taskbox.js";
 import { Task } from "./task.js";
-import { saveTask, loadTasks, eraseTask } from "./taskstorage.js";
+import { saveTask, loadTasks, eraseTask, syncPendingTasks } from "./taskstorage.js";
 
-// Asigna clase principal
 let myTaskbox = new Taskbox();
 
-// Declara constantes de elementos HTML
 const btnAdd = document.getElementById("btn-add");
 const tasksContainer = document.getElementById("tasks");
 
-// Offline
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("/todo-list/sw.js")
-    .then(() => console.log("Service Worker registrado"))
-    .catch(err => console.error("Error al registrar SW:", err));
-}
-
-window.addEventListener("online", async () => {
-    const offlineTasks = JSON.parse(localStorage.getItem("offlineTasks")) || [];
-    for (const task of offlineTasks) {
-        await saveTask(new Task(task.title));
-    }
-    localStorage.removeItem("offlineTasks");
-    console.log("Pendientes sincronizados con la base de datos");
-});
-
-// Al cargar la página
-document.addEventListener("DOMContentLoaded", async () => {
-
-    const tasks = await loadTasks();
-
-    myTaskbox.tasks = tasks.map(task => new Task(task.title))
+// Renderiza todas las tareas de myTaskbox en el DOM
+function renderTasks() {
 
     tasksContainer.innerHTML = "";
 
@@ -54,38 +32,36 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         tasksContainer.appendChild(div);
     });
+}
+
+// Al cargar la página
+document.addEventListener("DOMContentLoaded", async () => {
+    const tasks = await loadTasks();
+    myTaskbox.tasks = tasks.map(task => new Task(task.title));
+    renderTasks();
 });
 
-// Bóton de añadir tarea
+// Botón de añadir tarea
 btnAdd.addEventListener("click", async () => {
+
     const inputTask = document.getElementById("input-task");
-    const task = inputTask.value.trim();
-    if (!task) return;
+    const task = inputTask.value;
 
     const newTask = new Task(task);
+
     myTaskbox.addTask(newTask);
 
-    // Guardado
     await saveTask(newTask);
- 
 
-    const div = document.createElement("div");
-    const taskLabel = document.createElement("label");
-    const btnDelete = document.createElement("button");
-
-    taskLabel.textContent = task;
-    btnDelete.textContent = "x";
-
-    btnDelete.addEventListener("click", async () => {
-        // Borrado
-        await eraseTask(newTask);
-        myTaskbox.deleteTask(newTask.taskTitle);
-        div.remove();
-    });
-
-    div.appendChild(taskLabel);
-    div.appendChild(btnDelete);
-    tasksContainer.appendChild(div);
+    renderTasks();
 
     inputTask.value = "";
+});
+
+// Al volver la conexión
+window.addEventListener("online", async () => {
+    await syncPendingTasks();
+    const tasks = await loadTasks();
+    myTaskbox.tasks = tasks.map(task => new Task(task.title));
+    renderTasks();
 });
