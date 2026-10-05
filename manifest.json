@@ -3,7 +3,7 @@
   "short_name": "TODO",
   "description": "Una aplicación sencilla para organizar tareas.",
   "start_url": "index.html",
-  "scope": "/",
+  "scope": "/todo-list/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#ffffff",
