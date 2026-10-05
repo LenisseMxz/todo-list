@@ -2,6 +2,13 @@ import { Taskbox } from "./taskbox.js";
 import { Task } from "./task.js";
 import { saveTask, loadTasks, eraseTask, syncPendingTasks } from "./taskstorage.js";
 
+// Registro del Service Worker
+if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("/todo-list/sw.js")
+        .then(() => console.log("Service Worker registrado"))
+        .catch(err => console.error("Error al registrar SW:", err));
+}
+
 let myTaskbox = new Taskbox();
 
 const btnAdd = document.getElementById("btn-add");

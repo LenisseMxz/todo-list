@@ -1,4 +1,4 @@
-const CACHE_NAME = "todolist-cache-v10";
+const CACHE_NAME = "todolist-cache-v12";
 const urlsToCache = [
     "/todo-list/",
     "/todo-list/index.html",
@@ -17,9 +17,10 @@ const urlsToCache = [
 ]
 
 self.addEventListener("install", event => {
-    event.waitUntil(
-        caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
-    );
+  self.skipWaiting();
+  event.waitUntil(
+      caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
+  );
 });
 
 self.addEventListener("activate", event => {
@@ -33,20 +34,27 @@ self.addEventListener("activate", event => {
           }
         })
       );
-    })
+    }).then(() => self.clients.claim())
   );
 });
 
 self.addEventListener("fetch", event => {
+  if (event.request.mode === "navigate") {
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
+          return response;
+        })
+        .catch(() => caches.match("/todo-list/index.html"))
+    );
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request).then(response => {
-      if (response) {
-        return response;
-      }
-      if (event.request.mode === "navigate") {
-        return caches.match("/todo-list/index.html");
-      }
-      return fetch(event.request);
+      return response || fetch(event.request);
     })
   );
 });
