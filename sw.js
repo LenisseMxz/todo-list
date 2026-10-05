@@ -21,6 +21,10 @@ self.addEventListener("install", event => {
   event.waitUntil(
       caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
   );
+  self.skipWaiting();
+  event.waitUntil(
+      caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
+  );
 });
 
 self.addEventListener("activate", event => {
@@ -34,6 +38,7 @@ self.addEventListener("activate", event => {
           }
         })
       );
+    }).then(() => self.clients.claim())
     }).then(() => self.clients.claim())
   );
 });
@@ -52,8 +57,22 @@ self.addEventListener("fetch", event => {
     return;
   }
 
+  if (event.request.mode === "navigate") {
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
+          return response;
+        })
+        .catch(() => caches.match("/todo-list/index.html"))
+    );
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request).then(response => {
+      return response || fetch(event.request);
       return response || fetch(event.request);
     })
   );
