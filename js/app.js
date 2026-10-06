@@ -29,7 +29,7 @@ function renderTasks() {
         btnDelete.textContent = "x";
 
         btnDelete.addEventListener("click", async () => {
-            myTaskbox.deleteTask(task.taskTitle);
+            myTaskbox.deleteTask(task);
             await eraseTask(task);
             div.remove();
         });
