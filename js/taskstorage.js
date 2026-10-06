@@ -21,6 +21,7 @@ export async function saveTask(task) {
         addToPendingQueue(task.taskTitle);
     } else {
         console.log('Task saved:', data);
+        addToCache(task.taskTitle);
     }
 }
 
@@ -53,10 +54,8 @@ export async function loadTasks() {
 export async function eraseTask(task) {
 
     if (!navigator.onLine) {
-        // Si era una tarea que aún no se había sincronizado, basta con sacarla de la cola
         const wasPending = removeFromPendingQueue(task.taskTitle);
 
-        // Si venía de la caché (ya existía en Supabase), hay que marcarla para borrar después
         if (!wasPending) {
             addToPendingDeleteQueue(task.taskTitle);
         }
@@ -72,6 +71,8 @@ export async function eraseTask(task) {
 
     if (error) {
         console.error('Error deleting task:', error);
+    } else {
+        removeFromCache(task.taskTitle);
     }
 }
 
@@ -125,6 +126,15 @@ function removeFromCache(title) {
     saveCachedTasks(filtered);
 }
 
+function addToCache(title) {
+    const cached = getCachedTasks();
+    const alreadyThere = cached.some(t => t.title === title);
+    if (!alreadyThere) {
+        cached.push({ title });
+        saveCachedTasks(cached);
+    }
+}
+
 // Helpers de cola de inserciones pendientes
 function getPendingQueue() {
     const pending = localStorage.getItem(PENDING_KEY);
@@ -152,7 +162,6 @@ function clearPendingQueue() {
 }
 
 // Helpers de cola de eliminaciones pendientes
-
 function getPendingDeleteQueue() {
     const pending = localStorage.getItem(PENDING_DELETE_KEY);
     return pending ? JSON.parse(pending) : [];
