@@ -29,8 +29,8 @@ function renderTasks() {
         btnDelete.textContent = "x";
 
         btnDelete.addEventListener("click", async () => {
-            await eraseTask(task);
             myTaskbox.deleteTask(task.taskTitle);
+            await eraseTask(task);
             div.remove();
         });
 
