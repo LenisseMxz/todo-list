@@ -5,62 +5,60 @@ const PENDING_KEY = 'tasks_pending_sync';
 const PENDING_DELETE_KEY = 'tasks_pending_delete';
 
 // Guarda las tareas
-export async function saveTask(task) {
-
+export async function saveTask(task, userId) {
     if (!navigator.onLine) {
-        addToPendingQueue(task.taskTitle);
+        addToPendingQueue(task.taskTitle, userId);
         return;
     }
 
     const { data, error } = await supabase
         .from('tasks')
-        .insert([{ title: task.taskTitle }]);
+        .insert([{ title: task.taskTitle, user_id: userId }]);
 
     if (error) {
         console.error('Error saving the tasks:', error);
-        addToPendingQueue(task.taskTitle);
+        addToPendingQueue(task.taskTitle, userId);
     } else {
         console.log('Task saved:', data);
-        addToCache(task.taskTitle);
+        addToCache(task.taskTitle, userId);
     }
 }
 
-// Devuelve las tareas
-export async function loadTasks() {
-
+// Devuelve las tareas del usuario
+export async function loadTasks(userId) {
     if (!navigator.onLine) {
-        return getCachedTasks().concat(
-            getPendingQueue().map(title => ({ title }))
+        return getCachedTasks(userId).concat(
+            getPendingQueue(userId).map(title => ({ title }))
         );
     }
 
     const { data, error } = await supabase
         .from('tasks')
-        .select('*');
+        .select('*')
+        .eq('user_id', userId);
 
     if (error) {
         console.error('Error loading the tasks:', error);
-        return getCachedTasks().concat(
-            getPendingQueue().map(title => ({ title }))
+        return getCachedTasks(userId).concat(
+            getPendingQueue(userId).map(title => ({ title }))
         );
     }
 
     const tasks = data || [];
-    saveCachedTasks(tasks);
+    saveCachedTasks(tasks, userId);
     return tasks;
 }
 
 // Borra la tarea
-export async function eraseTask(task) {
-
+export async function eraseTask(task, userId) {
     if (!navigator.onLine) {
-        const wasPending = removeFromPendingQueue(task.taskTitle);
+        const wasPending = removeFromPendingQueue(task.taskTitle, userId);
 
         if (!wasPending) {
-            addToPendingDeleteQueue(task.taskTitle);
+            addToPendingDeleteQueue(task.taskTitle, userId);
         }
 
-        removeFromCache(task.taskTitle);
+        removeFromCache(task.taskTitle, userId);
         return;
     }
 
@@ -68,29 +66,29 @@ export async function eraseTask(task) {
         .from('tasks')
         .delete()
         .eq('title', task.taskTitle)
+        .eq('user_id', userId);
 
     if (error) {
         console.error('Error deleting task:', error);
     } else {
-        removeFromCache(task.taskTitle);
+        removeFromCache(task.taskTitle, userId);
     }
 }
 
 // Sincroniza inserciones y eliminaciones pendientes creadas offline
-export async function syncPendingTasks() {
-
-    const pendingInserts = getPendingQueue();
-    const pendingDeletes = getPendingDeleteQueue();
+export async function syncPendingTasks(userId) {
+    const pendingInserts = getPendingQueue(userId);
+    const pendingDeletes = getPendingDeleteQueue(userId);
 
     if (pendingInserts.length > 0) {
         const { error } = await supabase
             .from('tasks')
-            .insert(pendingInserts.map(title => ({ title })));
+            .insert(pendingInserts.map(title => ({ title, user_id: userId })));
 
         if (error) {
             console.error('Error syncing pending inserts:', error);
         } else {
-            clearPendingQueue();
+            clearPendingQueue(userId);
             console.log('Pending inserts synced:', pendingInserts);
         }
     }
@@ -99,80 +97,79 @@ export async function syncPendingTasks() {
         const { error } = await supabase
             .from('tasks')
             .delete()
-            .in('title', pendingDeletes);
+            .in('title', pendingDeletes)
+            .eq('user_id', userId);
 
         if (error) {
             console.error('Error syncing pending deletes:', error);
         } else {
-            clearPendingDeleteQueue();
+            clearPendingDeleteQueue(userId);
             console.log('Pending deletes synced:', pendingDeletes);
         }
     }
 }
 
-// Helpers de caché local
-function saveCachedTasks(tasks) {
-    localStorage.setItem(CACHE_KEY, JSON.stringify(tasks));
+// --- Helpers de caché (ahora por usuario) ---
+function saveCachedTasks(tasks, userId) {
+    localStorage.setItem(`${CACHE_KEY}_${userId}`, JSON.stringify(tasks));
 }
 
-function getCachedTasks() {
-    const cached = localStorage.getItem(CACHE_KEY);
+function getCachedTasks(userId) {
+    const cached = localStorage.getItem(`${CACHE_KEY}_${userId}`);
     return cached ? JSON.parse(cached) : [];
 }
 
-function removeFromCache(title) {
-    const cached = getCachedTasks();
+function removeFromCache(title, userId) {
+    const cached = getCachedTasks(userId);
     const filtered = cached.filter(t => t.title !== title);
-    saveCachedTasks(filtered);
+    saveCachedTasks(filtered, userId);
 }
 
-function addToCache(title) {
-    const cached = getCachedTasks();
+function addToCache(title, userId) {
+    const cached = getCachedTasks(userId);
     const alreadyThere = cached.some(t => t.title === title);
     if (!alreadyThere) {
         cached.push({ title });
-        saveCachedTasks(cached);
+        saveCachedTasks(cached, userId);
     }
 }
 
-// Helpers de cola de inserciones pendientes
-function getPendingQueue() {
-    const pending = localStorage.getItem(PENDING_KEY);
+// --- Helpers de cola de inserciones (por usuario) ---
+function getPendingQueue(userId) {
+    const pending = localStorage.getItem(`${PENDING_KEY}_${userId}`);
     return pending ? JSON.parse(pending) : [];
 }
 
-function addToPendingQueue(title) {
-    const pending = getPendingQueue();
+function addToPendingQueue(title, userId) {
+    const pending = getPendingQueue(userId);
     pending.push(title);
-    localStorage.setItem(PENDING_KEY, JSON.stringify(pending));
+    localStorage.setItem(`${PENDING_KEY}_${userId}`, JSON.stringify(pending));
 }
 
-// Borra la tarea de la cola de tareas pendientes (por añadir)
-function removeFromPendingQueue(title) {
-    const pending = getPendingQueue();
+function removeFromPendingQueue(title, userId) {
+    const pending = getPendingQueue(userId);
     const filtered = pending.filter(t => t !== title);
-
     const wasPending = filtered.length !== pending.length;
-    localStorage.setItem(PENDING_KEY, JSON.stringify(filtered));
+    localStorage.setItem(`${PENDING_KEY}_${userId}`, JSON.stringify(filtered));
     return wasPending;
 }
 
-function clearPendingQueue() {
-    localStorage.removeItem(PENDING_KEY);
+function clearPendingQueue(userId) {
+    localStorage.removeItem(`${PENDING_KEY}_${userId}`);
 }
 
-// Helpers de cola de eliminaciones pendientes
-function getPendingDeleteQueue() {
-    const pending = localStorage.getItem(PENDING_DELETE_KEY);
+// --- Helpers de cola de eliminaciones (por usuario) ---
+function getPendingDeleteQueue(userId) {
+    const pending = localStorage.getItem(`${PENDING_DELETE_KEY}_${userId}`);
     return pending ? JSON.parse(pending) : [];
 }
 
-function addToPendingDeleteQueue(title) {
-    const pending = getPendingDeleteQueue();
+function addToPendingDeleteQueue(title, userId) {
+    const pending = getPendingDeleteQueue(userId);
     pending.push(title);
-    localStorage.setItem(PENDING_DELETE_KEY, JSON.stringify(pending));
+    localStorage.setItem(`${PENDING_DELETE_KEY}_${userId}`, JSON.stringify(pending));
 }
 
-function clearPendingDeleteQueue() {
-    localStorage.removeItem(PENDING_DELETE_KEY);
+function clearPendingDeleteQueue(userId) {
+    localStorage.removeItem(`${PENDING_DELETE_KEY}_${userId}`);
 }

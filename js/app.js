@@ -1,6 +1,7 @@
 import { Taskbox } from "./taskbox.js";
 import { Task } from "./task.js";
 import { saveTask, loadTasks, eraseTask, syncPendingTasks } from "./taskstorage.js";
+import { supabase } from "./supabase.js";
 
 // Registro del Service Worker
 if ("serviceWorker" in navigator) {
@@ -10,17 +11,27 @@ if ("serviceWorker" in navigator) {
 }
 
 let myTaskbox = new Taskbox();
+let currentUser = null;
 
-const btnAdd = document.getElementById("btn-add");
 const tasksContainer = document.getElementById("tasks");
+const authView = document.getElementById("auth-view");
+const appView = document.getElementById("app-view");
 
-// Renderiza todas las tareas de myTaskbox en el DOM
+// Convierte un username a un correo derivado único
+function usernameToEmail(username) {
+    return `${username.trim().toLowerCase()}@todoapp.local`;
+}
+
+// Cambio de vistas
+function showView(view) {
+    authView.hidden = view !== "auth";
+    appView.hidden = view !== "app";
+}
+
+// Render de tareas
 function renderTasks() {
-
     tasksContainer.innerHTML = "";
-
     myTaskbox.tasks.forEach(task => {
-
         const div = document.createElement("div");
         const taskLabel = document.createElement("label");
         const btnDelete = document.createElement("button");
@@ -30,45 +41,90 @@ function renderTasks() {
 
         btnDelete.addEventListener("click", async () => {
             myTaskbox.deleteTask(task);
-            await eraseTask(task);
+            await eraseTask(task, currentUser.id);
             div.remove();
         });
 
         div.appendChild(taskLabel);
         div.appendChild(btnDelete);
-
         tasksContainer.appendChild(div);
     });
 }
 
-// Al cargar la página
-document.addEventListener("DOMContentLoaded", async () => {
-    const tasks = await loadTasks();
-    myTaskbox.tasks = tasks.map(task => new Task(task.title));
-    renderTasks();
+// Login
+document.getElementById("btn-login").addEventListener("click", async () => {
+    const username = document.getElementById("auth-username").value;
+    const password = document.getElementById("auth-password").value;
+    const email = usernameToEmail(username);
+
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) alert("Usuario o contraseña incorrectos");
 });
 
-// Botón de añadir tarea
-btnAdd.addEventListener("click", async () => {
+// Registro
+document.getElementById("btn-signup").addEventListener("click", async () => {
+    const username = document.getElementById("auth-username").value;
+    const password = document.getElementById("auth-password").value;
+    const email = usernameToEmail(username);
 
-    const inputTask = document.getElementById("input-task");
-    const task = inputTask.value;
+    const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { username } } // guardas el username en los metadatos
+    });
 
-    const newTask = new Task(task);
+    if (error) {
+        // El error de correo duplicado = username ya existe
+        if (error.message.includes("already") || error.message.includes("existe")) {
+            alert("Ese nombre de usuario ya existe");
+        } else {
+            alert("Error al crear cuenta: " + error.message);
+        }
+        return;
+    }
 
-    myTaskbox.addTask(newTask);
+    // Con la confirmación desactivada, ya entra directo
+    if (data.session) {
+        showView("app");
+        loadTasksForUser();
+    }
+});
 
-    await saveTask(newTask);
+// Escuchar cambios de sesión
+supabase.auth.onAuthStateChange((event, session) => {
+    currentUser = session?.user ?? null;
 
+    if (currentUser) {
+        showView("app");
+        loadTasksForUser();
+    } else {
+        showView("auth");
+        myTaskbox.tasks = [];
+        renderTasks();
+    }
+});
+
+// Cargar tareas del usuario logueado
+async function loadTasksForUser() {
+    const tasks = await loadTasks(currentUser.id);
+    myTaskbox.tasks = tasks.map(task => new Task(task.title));
     renderTasks();
+}
 
+// Botón de añadir tarea
+document.getElementById("btn-add").addEventListener("click", async () => {
+    const inputTask = document.getElementById("input-task");
+    const task = new Task(inputTask.value);
+
+    myTaskbox.addTask(task);
+    await saveTask(task, currentUser.id);
+    renderTasks();
     inputTask.value = "";
 });
 
 // Al volver la conexión
 window.addEventListener("online", async () => {
-    await syncPendingTasks();
-    const tasks = await loadTasks();
-    myTaskbox.tasks = tasks.map(task => new Task(task.title));
-    renderTasks();
+    if (!currentUser) return;
+    await syncPendingTasks(currentUser.id);
+    await loadTasksForUser();
 });
