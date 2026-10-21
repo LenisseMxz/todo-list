@@ -63,30 +63,32 @@ document.getElementById("btn-login").addEventListener("click", async () => {
 
 // Registro
 document.getElementById("btn-signup").addEventListener("click", async () => {
-    const username = document.getElementById("auth-username").value;
-    const password = document.getElementById("auth-password").value;
-    const email = usernameToEmail(username);
+    try {
+        const username = document.getElementById("auth-username").value;
+        const password = document.getElementById("auth-password").value;
+        const email = usernameToEmail(username);
 
-    const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: { data: { username } } // guardas el username en los metadatos
-    });
+        const { data, error } = await supabase.auth.signUp({
+            email,
+            password,
+            options: { data: { username } }
+        });
 
-    if (error) {
-        // El error de correo duplicado = username ya existe
-        if (error.message.includes("already") || error.message.includes("existe")) {
-            alert("Ese nombre de usuario ya existe");
-        } else {
-            alert("Error al crear cuenta: " + error.message);
+        if (error) {
+            if (error.message.includes("already") || error.message.includes("existe")) {
+                alert("Ese nombre de usuario ya existe");
+            } else {
+                alert("Error al crear cuenta: " + error.message);
+            }
+            return;
         }
-        return;
-    }
 
-    // Con la confirmación desactivada, ya entra directo
-    if (data.session) {
-        showView("app");
-        loadTasksForUser();
+        if (data.session) {
+            showView("app");
+            loadTasksForUser();
+        }
+    } catch (e) {
+        alert("Excepción: " + e.message)
     }
 });
 
