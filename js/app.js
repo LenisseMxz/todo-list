@@ -5,7 +5,7 @@ import { supabase } from "./supabase.js";
 
 // Registro del Service Worker
 if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("/todo-list/sw.js")
+    navigator.serviceWorker.register("sw.js")
         .then(() => console.log("Service Worker registrado"))
         .catch(err => console.error("Error al registrar SW:", err));
 }
