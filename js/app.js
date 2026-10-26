@@ -58,7 +58,11 @@ document.getElementById("btn-login").addEventListener("click", async () => {
     const email = usernameToEmail(username);
 
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) alert("Usuario o contraseña incorrectos");
+    if (error) {      
+        alert("Usuario o contraseña incorrectos");
+    } else {
+        alert("Cuenta creada. Revisa tu correo para confirmar.");     
+    }
 });
 
 // Registro
