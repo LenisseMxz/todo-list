@@ -3,7 +3,7 @@ import { Task } from "./task.js";
 import { saveTask, loadTasks, eraseTask, syncPendingTasks } from "./taskstorage.js";
 import { supabase } from "./supabase.js";
 
-Registro del Service Worker
+// Registro del Service Worker
 if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("sw.js")
         .then(() => console.log("Service Worker registrado"))
