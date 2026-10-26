@@ -4,11 +4,11 @@ import { saveTask, loadTasks, eraseTask, syncPendingTasks } from "./taskstorage.
 import { supabase } from "./supabase.js";
 
 // Registro del Service Worker
-if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("sw.js")
-        .then(() => console.log("Service Worker registrado"))
-        .catch(err => console.error("Error al registrar SW:", err));
-}
+// if ("serviceWorker" in navigator) {
+//     navigator.serviceWorker.register("sw.js")
+//         .then(() => console.log("Service Worker registrado"))
+//         .catch(err => console.error("Error al registrar SW:", err));
+// }
 
 let myTaskbox = new Taskbox();
 let currentUser = null;
@@ -104,17 +104,6 @@ supabase.auth.onAuthStateChange((event, session) => {
         showView("auth");
         myTaskbox.tasks = [];
         renderTasks();
-    }
-});
-
-// Al final de app.js, después de registrar onAuthStateChange***
-supabase.auth.getSession().then(({ data: { session } }) => {
-    currentUser = session?.user ?? null;
-    if (currentUser) {
-        showView("app");
-        loadTasksForUser();
-    } else {
-        showView("auth");
     }
 });
 
