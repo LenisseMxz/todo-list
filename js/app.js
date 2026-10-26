@@ -58,11 +58,7 @@ document.getElementById("btn-login").addEventListener("click", async () => {
     const email = usernameToEmail(username);
 
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {      
-        alert("Usuario o contraseña incorrectos");
-    } else {
-        alert("Cuenta creada. Revisa tu correo para confirmar.");     
-    }
+    if (error) alert("Usuario o contraseña incorrectos");
 });
 
 // Registro
@@ -98,6 +94,7 @@ document.getElementById("btn-signup").addEventListener("click", async () => {
 
 // Escuchar cambios de sesión
 supabase.auth.onAuthStateChange((event, session) => {
+    console.log("AUTH EVENT:", event, session?.user?.email);
     currentUser = session?.user ?? null;
 
     if (currentUser) {
@@ -107,6 +104,17 @@ supabase.auth.onAuthStateChange((event, session) => {
         showView("auth");
         myTaskbox.tasks = [];
         renderTasks();
+    }
+});
+
+// Al final de app.js, después de registrar onAuthStateChange***
+supabase.auth.getSession().then(({ data: { session } }) => {
+    currentUser = session?.user ?? null;
+    if (currentUser) {
+        showView("app");
+        loadTasksForUser();
+    } else {
+        showView("auth");
     }
 });
 
