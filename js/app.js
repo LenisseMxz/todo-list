@@ -94,7 +94,9 @@ document.getElementById("btn-signup").addEventListener("click", async () => {
 
 // Escuchar cambios de sesión
 supabase.auth.onAuthStateChange((event, session) => {
+
     console.log("AUTH EVENT:", event, session?.user?.email);
+
     currentUser = session?.user ?? null;
 
     if (currentUser) {
@@ -104,6 +106,12 @@ supabase.auth.onAuthStateChange((event, session) => {
         showView("auth");
         myTaskbox.tasks = [];
         renderTasks();
+
+        if (currentUser) {
+            localStorage.removeItem(`${CACHE_KEY}_${currentUser.id}`);
+            localStorage.removeItem(`${PENDING_KEY}_${currentUser.id}`);
+            localStorage.removeItem(`${PENDING_DELETE_KEY}_${currentUser.id}`);
+        }
     }
 });
 
@@ -116,6 +124,9 @@ async function loadTasksForUser() {
 
 // Botón de añadir tarea
 document.getElementById("btn-add").addEventListener("click", async () => {
+    
+    if (!currentUser) return;
+
     const inputTask = document.getElementById("input-task");
     const task = new Task(inputTask.value);
 
@@ -123,6 +134,10 @@ document.getElementById("btn-add").addEventListener("click", async () => {
     await saveTask(task, currentUser.id);
     renderTasks();
     inputTask.value = "";
+});
+
+document.getElementById("btn-logout").addEventListener("click", async () => {
+    await supabase.auth.signOut();
 });
 
 // Al volver la conexión
