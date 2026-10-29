@@ -12,26 +12,26 @@
     <!--Título de página-->
     <header><h1>TODO LIST</h1></header>
 
-    <div id="auth-view">
-        <h1>Iniciar sesión</h1>
-        <input id="auth-username" type="text" placeholder="Nombre de usuario">
-        <input id="auth-password" type="password" placeholder="Contraseña">
-        <button id="btn-login">Entrar</button>
-        <button id="btn-signup">Crear cuenta</button>
-    </div>
-
-    <!--Contenido principal-->
     <main>
-        <div id="app-view" hidden>
+        <!--Inicio de sesión-->
+        <div id="auth-view">
             <div id="principal">
-                <h2>Add your task</h2>
-                <div>
-                    <input name="input-task" id="input-task" type="text">
-                    <button id="btn-add">+</button>
-                </div>
+                <h1>Iniciar sesión</h1>
+                <input id="auth-username" type="text" placeholder="Nombre de usuario">
+                <input id="auth-password" type="password" placeholder="Contraseña">
+                <button id="btn-login">Entrar</button>
+                <button id="btn-signup">Crear cuenta</button>
             </div>
-            <div id="tasks"></div>
-            <button id="btn-logout">Cerrar sesión</button>
+        </div>
+        <!--Caja de tareas-->
+        <div id="app-view" hidden>
+            <div id="secondary">
+                <h2>Add your task</h2>
+                <input name="input-task" id="input-task" type="text">
+                <button id="btn-add">+</button>
+                <div id="tasks"></div>
+                <button id="btn-logout">Cerrar sesión</button>
+            </div>
         </div>
     </main>
     <!--Script principal de la página-->

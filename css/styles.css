@@ -1,23 +1,19 @@
 #principal {
-    margin: 5%;
+    margin-top: 5%;
+    margin-left: 25%;
+    padding-block: 2%;
     width: 50%;
     border: 2px solid;
     background-color: white;
 }
 
-#principal div {
-    margin: 5%;
-}
-
-#principal button {
-    border: 1px solid;
-    background-color: white;
-    -webkit-text-stroke: 1px black;
-}
-
-#principal input {
+#secondary {
+    margin-top: 5%;
+    margin-left: 25%;
+    padding-block: 2%;
     width: 50%;
-    border: 1px solid;
+    border: 2px solid;
+    background-color: white;
 }
 
 #tasks {
@@ -52,13 +48,19 @@ header h1 {
     -webkit-text-stroke: 1px black;
 }
 
-main {
-    justify-items: center;
-}
-
 body {
     display: flex;
     flex-direction: column;
     text-align: center;
     background-color: lightgrey;
+}
+
+input {
+    border: 2px, solid, black
+}
+
+button {
+    border: 1px solid;
+    background-color: white;
+    -webkit-text-stroke: 1px black;
 }
