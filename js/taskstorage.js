@@ -77,6 +77,9 @@ export async function eraseTask(task, userId) {
 
 // Sincroniza inserciones y eliminaciones pendientes creadas offline
 export async function syncPendingTasks(userId) {
+
+    if (!navigator.onLine) return; 
+
     const pendingInserts = getPendingQueue(userId);
     const pendingDeletes = getPendingDeleteQueue(userId);
 

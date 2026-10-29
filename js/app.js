@@ -93,7 +93,7 @@ document.getElementById("btn-signup").addEventListener("click", async () => {
 });
 
 // Escuchar cambios de sesión
-supabase.auth.onAuthStateChange((event, session) => {
+supabase.auth.onAuthStateChange(async (event, session) => {
 
     console.log("AUTH EVENT:", event, session?.user?.email);
 
@@ -101,6 +101,7 @@ supabase.auth.onAuthStateChange((event, session) => {
 
     if (currentUser) {
         showView("app");
+        await syncPendingTasks(currentUser.id);
         loadTasksForUser();
     } else {
         showView("auth");
