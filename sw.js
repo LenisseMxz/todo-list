@@ -1,4 +1,4 @@
-const CACHE_NAME = "todolist-cache-v21";
+const CACHE_NAME = "todolist-cache-v22";
 const urlsToCache = [
     "./",
     "./index.html",
@@ -47,7 +47,7 @@ self.addEventListener("fetch", event => {
           caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
           return response;
         })
-        .catch(() => caches.match("/todo-list/index.html"))
+        .catch(() => caches.match("./index.html"))
     );
     return;
   }
