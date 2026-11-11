@@ -1,19 +1,19 @@
 const CACHE_NAME = "todolist-cache-v20";
 const urlsToCache = [
-    "/todo-list/",
-    "/todo-list/index.html",
-    "/todo-list/manifest.json",
-    "/todo-list/sw.js",
-    "/todo-list/css/styles.css",
-    "/todo-list/js/vendor/supabase.js",
-    "/todo-list/js/app.js",
-    "/todo-list/js/task.js",
-    "/todo-list/js/taskbox.js",
-    "/todo-list/js/taskstorage.js",
-    "/todo-list/js/supabase.js",
-    "/todo-list/images/Black_and_white_squares.png",
-    "/todo-list/icons/icon_32.png",
-    "/todo-list/icons/icon_512.png"
+    "./",
+    "./index.html",
+    "./manifest.json",
+    "./sw.js",
+    "./css/styles.css",
+    "./js/vendor/supabase.js",
+    "./js/app.js",
+    "./js/task.js",
+    "./js/taskbox.js",
+    "./js/taskstorage.js",
+    "./js/supabase.js",
+    "./images/Black_and_white_squares.png",
+    "./icons/icon_32.png",
+    "./icons/icon_512.png"
 ]
 
 self.addEventListener("install", event => {
