@@ -1,4 +1,4 @@
-const CACHE_NAME = "todolist-cache-v22";
+const CACHE_NAME = "todolist-cache-v23";
 const urlsToCache = [
     "./",
     "./index.html",
@@ -16,10 +16,23 @@ const urlsToCache = [
     "./icons/icon_512.png"
 ]
 
+// self.addEventListener("install", event => {
+//   self.skipWaiting();
+//   event.waitUntil(
+//       caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
+//   );
+// });
+
 self.addEventListener("install", event => {
   self.skipWaiting();
   event.waitUntil(
-      caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
+    caches.open(CACHE_NAME).then(cache =>
+      Promise.all(
+        urlsToCache.map(url =>
+          cache.add(url).catch(err => console.error("FALLÓ:", url, err))
+        )
+      )
+    )
   );
 });
 
